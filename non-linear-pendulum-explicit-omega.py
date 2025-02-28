@@ -1,7 +1,7 @@
 '''
 Attempt to implement a non-linear pendulum using:
 
-    theta_double_dot = - g / l * sin (theta)
+    alpha = - g / l * sin (theta)
 
 This scripts generates and plots the behavior of `theta` with respect to time and a rudimental
 animation of the pendulum.
@@ -29,8 +29,8 @@ import matplotlib.pyplot as plt
 
 ######################################## Parameters ###############################################
 animation = True
-INITIAL_DELTA_THETA = np.pi / 730
-DURATION = 6  # s
+INITIAL_ENERGY = 370
+DURATION = 10  # s
 l = 2  # m
 m = 10  # kg
 #################################### End of parameters ############################################
@@ -49,30 +49,37 @@ def myPlotter(xVals, yVals, xLabel, yLabel, title):
     plt.grid(visible=True)
 
 
-def theta_t_plus_dt(dt, theta_t, theta_t_minus_dt):
-    return -g / l * np.sin(theta_t) * (dt * dt) - theta_t_minus_dt + 2 * theta_t
-
-
 t = np.linspace(0, NUM_OF_SAMPLES * dt, NUM_OF_SAMPLES - 1)
-theta_curr = INITIAL_DELTA_THETA
-theta_prev = 0
-theta_next = 0
 theta_vec = [0 for _ in range(0, NUM_OF_SAMPLES - 1)]
 omega_vec = [0 for _ in range(0, NUM_OF_SAMPLES - 1)]
+alpha_vec = [0 for _ in range(0, NUM_OF_SAMPLES - 1)]
+KE = [0 for _ in range(0, NUM_OF_SAMPLES - 1)]
+U = [0 for _ in range(0, NUM_OF_SAMPLES - 1)]
+E = [0 for _ in range(0, NUM_OF_SAMPLES - 1)]
+theta_curr = 0
+omega_sign = 1
+
 for i in range(0, NUM_OF_SAMPLES - 1):
-    theta_next = theta_t_plus_dt(dt, theta_curr, theta_prev)
-    omega_vec[i] = (theta_next - theta_curr) / dt
-    theta_prev = theta_curr
-    theta_curr = theta_next
-    theta_vec[i] = theta_curr
+    alpha_vec[i] = -g / l * np.sin(theta_curr)
+    omega_vec[i] = omega_sign * np.sqrt(2 * INITIAL_ENERGY / m / l / l - 2 *
+                                        g / l * (1 - np.cos(theta_curr)))
+    theta_vec[i] = theta_curr + omega_vec[i] * dt + 1 / 2 * alpha_vec[i] * dt * dt
+    KE[i] = (omega_vec[i] * l)**2 * m / 2
+    U[i] = m * g * l * (1 - np.cos(theta_vec[i]))
+    E[i] = KE[i] + U[i]
+    theta_curr = theta_vec[i]
+    if i == 0:
+        continue
+    if np.abs(KE[i]) < 0.0001 and KE[i] < KE[i - 1]:
+        omega_sign = -omega_sign
+        print(KE[i])
 
 myPlotter(t, theta_vec, 't [s]', 'theta [rad]', 'angle vs time')
+myPlotter(t, omega_vec, 't [s]', 'omega [rad/s]', 'velocity vs time')
+myPlotter(t, alpha_vec, 't [s]', 'alpha [rad/s/s]', 'acceleration vs time')
 
 # Energy / state space
 myPlotter(theta_vec, omega_vec, 'theta', 'omega', 'State Space')
-KE = [(omega_vec[i] * l)**2 * m / 2 for i in range(0, NUM_OF_SAMPLES - 1)]
-U = [m * g * l * (1 - np.cos(theta_vec[i])) for i in range(0, NUM_OF_SAMPLES - 1)]
-E = [KE[i] + U[i] for i in range(0, NUM_OF_SAMPLES - 1)]
 myPlotter(KE, U, 'kinetic [J]', 'potential [J]', 'Energy')
 myPlotter(t, E, 'time [s]', 'total energy [J]', 'Energy vs time')
 print("------------------------------------")
