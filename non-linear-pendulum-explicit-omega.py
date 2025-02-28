@@ -2,26 +2,10 @@
 Attempt to implement a non-linear pendulum using:
 
     alpha = - g / l * sin (theta)
+    |omega_vec| = sqrt(2 * E / (m * l^2) - 2 * g / l * (1 - cos(theta)))
 
 This scripts generates and plots the behavior of `theta` with respect to time and a rudimental
 animation of the pendulum.
-
-> NOTE: I cannot find a better implementation online so I made this up and I am not sure this is
-        correct. It seems that the energy is conserved. To see that, set
-        * `animation = False`
-        * `DURATION = 1000`
-
-The problem is setting the initial conditions. Basically, you can define them in terms of initial
-displacement (theta(t = -dt) and theta(t = 0)). This is causes problems if you change the
-time interval `dt`, as the same displacement would occur within a different time slot. So, don't
-change `dt` or try to also change the initial delta `theta` accordingly.
-
-> NOTE: python is slow at rendering and your frame rate is anyway the bottleneck. For this reason,
-    the `dt` used for generating data is not the same used to update the animation
-> NOTE2: the simulation works also if the pendulum starts spinning around but wrapping `theta`
-        when it exceeds 2pi makes the calculation of the angular speed `omega` more complicated.
-        So, the energy-related plots will look weird. Test by using
-        * `INITIAL_DELTA_THETA = np.pi / 530`
 '''
 
 import numpy as np
@@ -29,8 +13,8 @@ import matplotlib.pyplot as plt
 
 ######################################## Parameters ###############################################
 animation = True
-INITIAL_ENERGY = 370
-DURATION = 10  # s
+INITIAL_ENERGY = 370  # J
+DURATION = 20  # s
 l = 2  # m
 m = 10  # kg
 #################################### End of parameters ############################################
@@ -72,7 +56,6 @@ for i in range(0, NUM_OF_SAMPLES - 1):
         continue
     if np.abs(KE[i]) < 0.0001 and KE[i] < KE[i - 1]:
         omega_sign = -omega_sign
-        print(KE[i])
 
 myPlotter(t, theta_vec, 't [s]', 'theta [rad]', 'angle vs time')
 myPlotter(t, omega_vec, 't [s]', 'omega [rad/s]', 'velocity vs time')

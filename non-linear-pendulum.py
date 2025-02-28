@@ -1,7 +1,7 @@
 '''
 Attempt to implement a non-linear pendulum using:
 
-    theta_double_dot = - g / l * sin (theta)
+    alpha = - g / l * sin (theta)
 
 This scripts generates and plots the behavior of `theta` with respect to time and a rudimental
 animation of the pendulum.
