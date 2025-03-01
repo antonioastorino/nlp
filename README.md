@@ -20,15 +20,16 @@ The discretized equation for the `theta` can be derived as follows:
 ```
 theta(t + dt) - theta(t) =~ +omega(t) * dt + 1/2 alpha(t) * dt^2  +
 theta(t - dt) - theta(t) =~ -omega(t) * dt + 1/2 alpha(t) * dt^2  =
---------------------------------------------------------------------------------
+--------------------------------------------------------------------
 theta(t + dt) + theta(t - dt) =~ alpha(t) * dt^2 =>
-theta(t + dt) =~ alpha(t) * dt^2 - theta(t - dt)
+┍━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┑
+| theta(t + dt) =~ alpha(t) * dt^2 - theta(t - dt) |
+┕━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┙
 ```
 
 > NOTE 1: The result does not involve `omega`
 
-> NOTE 2: Expanding to the 3rd order would produce the same result -> this approximation is
-          very good!
+> NOTE 2: Expanding to the 3rd would cause the extra term to disappear with the sum -> this approximation is very good!
 
 I don't trust this approach because I made it up. However, I verified that:
 - The angular frequency for small angles
@@ -60,15 +61,36 @@ python3 non-linear-pendulum-with-perturbations.py
 I eventually figured out that `omega` can be immediately derived from the conservation of energy.
 ```
 m * v^2
-------- - m * g * l * (1 - cos(theta)) = E
+------- - m * g * l * (1 - cos(theta)) = E  =>
    2
+┍━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┑
+| omega^2 = (2 * E / l^2 - 2 * g / l * (1 - cos(theta))) |
+┕━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┙
+
 ```
 
+It's easy to verify that
+
+```
+d                                  2 * g
+-- omega^2 = 2 * omega * alpha = - ----- sin(theta) * omega =>
+dt                                   l
+
+           g
+alpha = - --- sin(theta)
+           l
+```
+as expected. This shows that the formula for `omega^2` is correct, but what's `omega`?.
+
+<blockquote>
 Problems:
-- Only the absolute value of `omega` can be calculated from the above equation. Some logic to detect a direction change is needed.
+
+- Some logic is needed to detect a direction change for `omega`.
 - The total energy deviation does not improve compared to the previous method.
+</blockquote>
 
 For now, the velocity sign is inverted when the kinetic energy is almost 0 and is less than the kinetic energy at the previous step.
+**If you have a better idea, please share it.**
 
 For testing, run
 ```
