@@ -25,10 +25,11 @@ l = 0.5  # Pendulum length [m]
 m = 0.5  # [kg]
 damping_k = 0.8  # Damping coefficient [kg / s^2]
 theta_d = np.pi / 2  # Desired angle [rad]
-MAX_TORQUE = 20  # Max controlling torque [Nm]
-K_p = 50
-K_i = 15 
-K_d = 4
+MAX_TORQUE = 50  # Max controlling torque [Nm]
+K_p = 100
+K_i = 45
+K_d = 15 
+disturbance = [0 for _ in range(1000)] + [-100 for _ in range(10)]
 #################################### End of parameters ############################################
 
 NUM_OF_SAMPLES = round(DURATION / dt)
@@ -59,7 +60,8 @@ theta_vec = [0 for _ in range(0, NUM_OF_SAMPLES + 1)]
 omega_vec = [0 for _ in range(0, NUM_OF_SAMPLES + 1)]
 torque_vec = [0 for _ in range(0, NUM_OF_SAMPLES + 1)]
 theta_err = [0 for _ in range(0, NUM_OF_SAMPLES + 1)]
-
+disturbance_vec = [0 for _ in range(0, NUM_OF_SAMPLES + 1)]
+disturbance_vec[0:min(NUM_OF_SAMPLES + 1, len(disturbance))] = disturbance[0:]
 err_integral = 0
 err_derivative = 0
 
@@ -71,7 +73,13 @@ for i in range(0, NUM_OF_SAMPLES + 1):
         err_derivative = theta_err[i] - theta_err[i - 1]
     ctrl_torque = K_p * theta_err[i] + K_i * (err_integral * dt) + K_d * (err_derivative / dt)
     ctrl_torque = np.sign(ctrl_torque) * min(abs(ctrl_torque), MAX_TORQUE)
-    theta_next = theta_t_plus_dt(dt, theta_curr, theta_prev, ctrl_torque, damping_k)
+    theta_next = theta_t_plus_dt(
+        dt,
+        theta_curr,
+        theta_prev,
+        ctrl_torque +
+        disturbance_vec[i],
+        damping_k)
     omega_vec[i] = (theta_next - theta_curr) / dt
     theta_prev = theta_curr
     theta_curr = theta_next
