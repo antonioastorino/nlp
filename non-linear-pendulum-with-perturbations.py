@@ -67,7 +67,7 @@ for i in range(0, NUM_OF_SAMPLES - 1):
     theta_curr = theta_next
     theta_vec[i] = theta_curr
 
-myPlotter(t, theta_vec, 't [s]', 'theta [rad]', 'time vs angle')
+myPlotter(t, theta_vec, 't [s]', 'theta [rad]', 'angle vs time')
 myPlotter(t, torque_vec, 't [s]', 'applied torque [Nm]', 'Applied torque')
 
 # Energy / state space

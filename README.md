@@ -40,10 +40,10 @@ This demo shows the validity of this method when no perturbation is applied and 
 python3 non-linear-pendulum.py
 ```
 With the default values, the output is
-![./doc/time-vs-angle.png](doc/time-vs-angle.png)
+![./doc/angle_no-damping.png](doc/angle_no-damping.png)
 
 
-### Example 2 - damping force + external force 
+### Example 2 - damping force + input force 
 In this demo, external forces are applied and the result looks ok.
 ```
 python3 non-linear-pendulum-with-perturbations.py
