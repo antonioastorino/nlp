@@ -28,8 +28,8 @@ theta_d = np.pi / 2  # Desired angle [rad]
 MAX_TORQUE = 50  # Max controlling torque [Nm]
 K_p = 100
 K_i = 45
-K_d = 15 
-disturbance = [0 for _ in range(1000)] + [-100 for _ in range(10)]
+K_d = 15
+perturbation = [0 for _ in range(1000)] + [-100 for _ in range(10)]
 #################################### End of parameters ############################################
 
 NUM_OF_SAMPLES = round(DURATION / dt)
@@ -60,8 +60,8 @@ theta_vec = [0 for _ in range(0, NUM_OF_SAMPLES + 1)]
 omega_vec = [0 for _ in range(0, NUM_OF_SAMPLES + 1)]
 torque_vec = [0 for _ in range(0, NUM_OF_SAMPLES + 1)]
 theta_err = [0 for _ in range(0, NUM_OF_SAMPLES + 1)]
-disturbance_vec = [0 for _ in range(0, NUM_OF_SAMPLES + 1)]
-disturbance_vec[0:min(NUM_OF_SAMPLES + 1, len(disturbance))] = disturbance[0:]
+perturbation_vec = [0 for _ in range(0, NUM_OF_SAMPLES + 1)]
+perturbation_vec[0:min(NUM_OF_SAMPLES + 1, len(perturbation))] = perturbation[0:]
 err_integral = 0
 err_derivative = 0
 
@@ -78,7 +78,7 @@ for i in range(0, NUM_OF_SAMPLES + 1):
         theta_curr,
         theta_prev,
         ctrl_torque +
-        disturbance_vec[i],
+        perturbation_vec[i],
         damping_k)
     omega_vec[i] = (theta_next - theta_curr) / dt
     theta_prev = theta_curr
@@ -93,7 +93,7 @@ theta_plot_vec = [theta_vec[i] / np.pi for i in range(0, NUM_OF_SAMPLES + 1)]
 err_plot_vec = [theta_err[i] / theta_d * 100 for i in range(0, NUM_OF_SAMPLES + 1)]
 myPlotter(t, theta_plot_vec, 't [s]', r"$\frac{\theta}{\pi}$ [rad]", 'angle vs time')
 myPlotter(t, err_plot_vec, 't [s]', r"$(\theta_d - \theta)/\theta_d * 100 $ [%]", 'error vs time')
-myPlotter(t, torque_vec, 't [s]', 'applied torque [Nm]', 'Applied torque')
+myPlotter(t, torque_vec, 't [s]', 'applied torque [Nm]', 'Controlling torque')
 
 # Energy / state space
 myPlotter(theta_vec, omega_vec, 'theta [rad]', 'omega [rad/s]', 'State Space')

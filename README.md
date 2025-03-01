@@ -38,7 +38,7 @@ I don't trust this approach because I made it up. However, I verified that:
 ### Example 1 - impulse response - no perturbations
 This demo shows the validity of this method when no perturbation is applied and the energy is conserved.
 ```
-python3 non-linear-pendulum.py
+python3 example_01.py
 ```
 With the default values, the output is
 ![./doc/angle_no-damping.png](doc/angle_no-damping.png)
@@ -47,7 +47,7 @@ With the default values, the output is
 ### Example 2 - damping force + input force 
 In this demo, external forces are applied and the result looks ok.
 ```
-python3 non-linear-pendulum-with-perturbations.py
+python3 example_02py
 ```
 
 ![./doc/input_damped-plus-sinusoidal-input.png](doc/input_damped-plus-sinusoidal-input.png)
@@ -56,6 +56,11 @@ python3 non-linear-pendulum-with-perturbations.py
 
 > WARNING! Don't stare at the pendulum for too long! :)
 
+### Example 3 - PID-controlled system
+A simple PID controller sets the pendulum to a desired position.
+An impulsive perturbation is applied after steady state is almost reached. Then the system goes back to steady state. The maximum torque is limited to avoid unphysical responses. 
+
+![./doc/example_03-controlling-torque.png](doc/example_03-controlling-torque.png)
 
 ## Method 2 - Calculate `omega`
 I eventually figured out that `omega` can be immediately derived from the conservation of energy.
@@ -94,7 +99,7 @@ For now, the velocity sign is inverted when the kinetic energy is almost 0 and i
 
 For testing, run
 ```
-python3 non-linear-pendulum-explicit-omega.py
+python3 explicit-omega.py
 ```
 
 # Resources:
