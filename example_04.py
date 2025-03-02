@@ -14,6 +14,7 @@ during the first N time steps
 import time
 import numpy as np
 import matplotlib.pyplot as plt
+import random
 
 g = 9.81  # Gravitational acceleration [m / s^2]
 dt = 0.001  # Time step [s]
@@ -21,17 +22,19 @@ dt = 0.001  # Time step [s]
 ######################################## Parameters ###############################################
 animation = True
 DURATION = 10  # Simulation duration [s]
-l = 0.5  # Pendulum length [m]
-m = 0.5  # [kg]
+l = 1  # Pendulum length [m]
+m = 2  # [kg]
 damping_k = 0.8  # Damping coefficient [kg / s^2]
-theta_d = np.pi / 2  # Desired angle [rad]
+theta_d = np.pi / 4 * 4  # Desired angle [rad]
 TORQUE_TO_CURR = 4  # Torque to current ratio [Nm/A]
-MAX_CURRENT = 10  # Max controlling current [A]
-K_p = 100
-K_i = 45
-K_d = 8
-CURRENT_TF_POLE = 20
-perturbation = [0 for _ in range(1000)] + [-100 for _ in range(10)]
+MAX_CURRENT = 15  # Max controlling current [A]
+K_p = 200
+K_i = 10
+K_d = 20
+CURRENT_TF_POLE = 10
+perturbation = [0 for _ in range(2000)] + [-200 for _ in range(10)]
+SIGMA_MEAS = 0.01 * np.pi
+SIGMA_CTRL = MAX_CURRENT * 0.001
 #################################### End of parameters ############################################
 
 NUM_OF_SAMPLES = round(DURATION / dt)
@@ -39,7 +42,7 @@ NUM_OF_SAMPLES = round(DURATION / dt)
 
 def myPlotter(xVals, yVals, xLabel, yLabel, title):
     plt.figure(figsize=(8, 6))
-    plt.plot(xVals, yVals, color='blue', linewidth=4)
+    plt.plot(xVals, yVals, color='blue', linewidth=2)
     plt.title(title)
     plt.xlabel(xLabel)
     plt.ylabel(yLabel)
@@ -72,18 +75,20 @@ current_vec = [0 for _ in range(0, NUM_OF_SAMPLES + 1)]
 theta_err = [0 for _ in range(0, NUM_OF_SAMPLES + 1)]
 perturbation_vec = [0 for _ in range(0, NUM_OF_SAMPLES + 1)]
 perturbation_vec[0:min(NUM_OF_SAMPLES + 1, len(perturbation))] = perturbation[0:]
+measurement_noise = [random.gauss(0, SIGMA_MEAS) for _ in range(0, NUM_OF_SAMPLES + 1)]
+control_noise = [random.gauss(0, SIGMA_CTRL) for _ in range(0, NUM_OF_SAMPLES + 1)]
 err_integral = 0
 err_derivative = 0
 
 start_time = time.time()
 for i in range(0, NUM_OF_SAMPLES + 1):
-    theta_err[i] = (theta_d - theta_curr)
+    theta_err[i] = (theta_d - theta_curr + measurement_noise[i])
     err_integral = err_integral + theta_err[i]
     if i > 0:
         err_derivative = theta_err[i] - theta_err[i - 1]
     forced_current = K_p * theta_err[i] + K_i * (err_integral * dt) + K_d * (err_derivative / dt)
     current_next = i_t_plus_dt(dt, current_curr, forced_current)
-    ctrl_torque = TORQUE_TO_CURR * current_next
+    ctrl_torque = TORQUE_TO_CURR * (current_next + control_noise[i])
     theta_next = theta_t_plus_dt(
         dt,
         theta_curr,
@@ -105,9 +110,9 @@ print("Final error % =", (theta_d - theta_vec[-1]) / theta_d * 100)
 theta_plot_vec = [theta_vec[i] / np.pi for i in range(0, NUM_OF_SAMPLES + 1)]
 err_plot_vec = [theta_err[i] / theta_d * 100 for i in range(0, NUM_OF_SAMPLES + 1)]
 myPlotter(t, theta_plot_vec, 't [s]', r"$\frac{\theta}{\pi}$ [rad]", 'angle vs time')
-myPlotter(t, err_plot_vec, 't [s]', r"$(\theta_d - \theta)/\theta_d * 100 $ [%]", 'error vs time')
-myPlotter(t, torque_vec, 't [s]', r'$\tau [Nm]$', 'Controlling torque')
-myPlotter(t, current_vec, 't [s]', r'$i [A]$', 'Controlling current')
+myPlotter(t, err_plot_vec, 't [s]', r"$(\theta_d - \theta)/\theta_d * 100$[%]", 'error vs time')
+myPlotter(t, torque_vec, 't [s]', r'$\tau$ [Nm]', 'Controlling torque')
+myPlotter(t, current_vec, 't [s]', r'i [A]', 'Controlling current')
 myPlotter(theta_vec, omega_vec, 'theta [rad]', 'omega [rad/s]', 'State Space')
 
 if (animation):
