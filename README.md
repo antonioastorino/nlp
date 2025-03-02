@@ -1,18 +1,23 @@
 # Non-Linear Pendulum
 Simulate a non-linear pendulum in time domain without using the small-angle approximation.
+Let
+- $`\theta`$ be the angular position
+- $`\omega`$ be the angular velocity
+- $`\alpha`$ be the angular acceleration
 
-Let:
-- `theta` be the angular position
-- `omega` be the angular velocity
-- `alpha` be the angular acceleration
+The angular acceleration due to gravity is given by
+```math
+\alpha = - \dfrac{g}{l}\sin(\theta)
+```
 
 An immediate discretization method would look as follows:
-- `theta(t + dt) = omega(t) * dt`
-- `omaga(t + dt) = alpha(t) * dt`
+- $`theta(t + dt) = omega(t) * dt`$
+- $`\omega(t + dt) = alpha(t) * dt`$
 
-However, I was initially unable to calculate omega, and hence I found an alternative solution.
 
-## Method 1 - Taylor expansion
+## Method 1 - Taylor expansion - central difference
+I am unable to calculate $`\omega`$, and hence I found an alternative solution.
+
 The discretized equation for the `theta` can be derived as follows:
 - Compute two Taylor expansions for `theta(t +/- dt)` truncated at the 2nd order wherein
 - I add the two expansions and solve for `theta(t + dt)`
@@ -27,7 +32,7 @@ theta(t + dt) + theta(t - dt) =~ alpha(t) * dt^2 =>
 ┕━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┙
 ```
 
-> NOTE 1: The result does not involve `omega`
+> NOTE 1: The result does not involve $`\omega`$
 
 > NOTE 2: Expanding to the 3rd would cause the extra term to disappear with the sum -> this approximation is very good!
 
@@ -86,15 +91,15 @@ The produced torque is assumed to be proportional to the applied current.
 
 Some extra noise has been added to the measured angle `theta`.
 
-## Method 2 - Calculate `omega`
-I eventually figured out that `omega` can be immediately derived from the conservation of energy.
+## Method 2 - Calculate $`\omega`$
+I eventually figured out that $`\omega`$ can be immediately derived from the conservation of energy.
 ```
 m * v^2
 ------- - m * g * l * (1 - cos(theta)) = E  =>
    2
-┍━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┑
-| omega^2 = (2 * E / l^2 - 2 * g / l * (1 - cos(theta))) |
-┕━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┙
+┍━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┑
+| omega^2 = (2 * E / l^2 / m - 2 * g / l * (1 - cos(theta))) |
+┕━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┙
 
 ```
 
@@ -109,7 +114,7 @@ dt                                   l
 alpha = - --- sin(theta)
            l
 ```
-as expected. This shows that the formula for `omega^2` is correct, but what's `omega`?.
+as expected. This shows that the formula for $`\omega^2`$ is correct, but what's $`\omega`$?.
 
 <blockquote>
 Problems:
@@ -125,6 +130,50 @@ For now, the velocity sign is inverted when the kinetic energy is almost 0 and i
 For testing, run
 ```
 python3 explicit-omega.py
+```
+
+## Method 3 - Exploit $`\omega^2`$
+I thought: what happens if you calculate the Taylor series for $`\theta(t + dt)`$ up to the 4th order?
+As for the 1st-order term, also the 3rd order will cancel out when taking the sum $`\theta(t + dt) + \theta(t - dt)`$.
+The extra term multiplied by $`dt^4`$ will give little contribution due to the usual choice of a small $`dt`$.
+However, this also means we can take a larger $`dt`$ and improve the speed of the simulation, maybe...
+
+#### The math
+Let $`f(\theta) = \alpha`$.
+```math
+\dot{\alpha} = f'(\theta)\omega
+```
+
+```math
+\ddot{\alpha} = f''(\theta)\omega^2 + f'(\theta)\alpha
+```
+The last equation shows that the 4th term in the Taylor series depends on $`\omega^2`$, which was already calculated in [Method 2](https://github.com/antonioastorino/nlp?tab=readme-ov-file#method-2---calculate-omega)
+
+Considering that $`f''(\theta) = g/\ell\sin(\theta) = -\alpha`$, we can write:
+```math
+\ddot{\alpha} = \alpha(f'(\theta) - \omega^2)
+```
+
+Using the Taylor series truncated at the 4th order and the central difference method, we obtain
+
+```math
+\theta(t+dt) \approx 2\theta(t) -\theta(t - dt) +\alpha dt^2 + \dfrac{dt^4 }{24}\ddot{\alpha}
+```
+or
+
+```math
+\theta(t+dt) \approx 2\theta(t) -\theta(t - dt) + \alpha \left(dt^2 + \dfrac{dt^4 }{24}(f'(\theta) - \omega^2)\right)
+```
+
+We can now use $`f'(\theta) = -g/\ell\cos{\theta}`$ and $`\omega^2 = 2E/(\ell^2m) + 2g/\ell (1 - \cos(\theta))`$ (derived from the conservation of the energy) to write
+
+```math
+\theta(t+dt) \approx 2\theta(t) -\theta(t - dt)  -\dfrac{g}{l}\sin(\theta) \left\{dt^2 + \dfrac{dt^4}{24}\left[-\dfrac{g}{l}\cos(\theta) - \dfrac{2E}{\ell^2m} - \dfrac{2g}{\ell}(1 - \cos(\theta))\right]\right\}
+
+```
+
+```math
+\theta(t+dt) \approx 2\theta(t) -\theta(t - dt)  -\dfrac{g}{l}\sin(\theta) \left[dt^2 + \dfrac{dt^4 }{24\ell}\left(g\cos(\theta) - \dfrac{2E}{\ell m} - 2g\right)\right]
 ```
 
 # Resources:
