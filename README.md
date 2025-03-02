@@ -7,18 +7,18 @@ Let
 
 The angular acceleration due to gravity is given by
 ```math
-\alpha = - \dfrac{g}{l}\sin(\theta)
+\alpha(t) = - \dfrac{g}{l}\sin(\theta(t))
 ```
 
 An immediate discretization method would look as follows:
-- $`theta(t + dt) = omega(t) * dt`$
-- $`\omega(t + dt) = alpha(t) * dt`$
+- $`\theta(t + dt) = \omega(t) * dt`$
+- $`\omega(t + dt) = \alpha(t) * dt`$
 
 
 ## Method 1 - Taylor expansion - central difference
 I am unable to calculate $`\omega`$, and hence I found an alternative solution.
 
-The discretized equation for the `theta` can be derived as follows:
+The discretized equation for the $`theta(t)`$ can be derived as follows:
 - Compute two Taylor expansions for `theta(t +/- dt)` truncated at the 2nd order wherein
 - I add the two expansions and solve for `theta(t + dt)`
 
@@ -89,10 +89,10 @@ where
 
 The produced torque is assumed to be proportional to the applied current.
 
-Some extra noise has been added to the measured angle `theta`.
+Some extra noise has been added to the measured angle $`\theta`$.
 
-## Method 2 - Calculate $`\omega`$
-I eventually figured out that $`\omega`$ can be immediately derived from the conservation of energy.
+## Method 2 - Calculate $`\omega(t)`$
+I eventually figured out that $`\omega(t)`$ can be immediately derived from the conservation of energy.
 ```
 m * v^2
 ------- - m * g * l * (1 - cos(theta)) = E  =>
@@ -114,7 +114,7 @@ dt                                   l
 alpha = - --- sin(theta)
            l
 ```
-as expected. This shows that the formula for $`\omega^2`$ is correct, but what's $`\omega`$?.
+as expected. This shows that the formula for $`\omega(t)^2`$ is correct, but what is the sign $`\omega(t)`$?.
 
 <blockquote>
 Problems:
@@ -139,42 +139,41 @@ The extra term multiplied by $`dt^4`$ will give little contribution due to the u
 However, this also means we can take a larger $`dt`$ and improve the speed of the simulation, maybe...
 
 #### The math
-Let $`f(\theta) = \alpha`$.
+Let $`f(\theta(t)) = \alpha(t)`$.
 ```math
-\dot{\alpha} = f'(\theta)\omega
+\dot{\alpha(t)} = f'(\theta(t))\omega(t)
 ```
 
 ```math
-\ddot{\alpha} = f''(\theta)\omega^2 + f'(\theta)\alpha
+\ddot{\alpha(t)} = f''(\theta(t))\omega(t)^2 + f'(\theta(t))\alpha(t)
 ```
 The last equation shows that the 4th term in the Taylor series depends on $`\omega^2`$, which was already calculated in [Method 2](https://github.com/antonioastorino/nlp?tab=readme-ov-file#method-2---calculate-omega)
 
-Considering that $`f''(\theta) = g/\ell\sin(\theta) = -\alpha`$, we can write:
+Considering that $`f''(\theta(t)) = g/\ell\sin(\theta(t)) = -\alpha(t)`$, we can write:
 ```math
-\ddot{\alpha} = \alpha(f'(\theta) - \omega^2)
+\ddot{\alpha(t)} = \alpha(t)(f'(\theta(t)) - \omega(t)^2)
 ```
 
 Using the Taylor series truncated at the 4th order and the central difference method, we obtain
 
 ```math
-\theta(t+dt) \approx 2\theta(t) -\theta(t - dt) +\alpha dt^2 + \dfrac{dt^4 }{24}\ddot{\alpha}
+\theta(t+dt) \approx 2\theta(t) -\theta(t - dt) +\alpha(t) dt^2 + \dfrac{dt^4}{12}\ddot{\alpha(t)}
 ```
 or
 
 ```math
-\theta(t+dt) \approx 2\theta(t) -\theta(t - dt) + \alpha \left(dt^2 + \dfrac{dt^4 }{24}(f'(\theta) - \omega^2)\right)
+\theta(t+dt) \approx 2\theta(t) -\theta(t - dt) + \alpha(t) \left(dt^2 + \dfrac{dt^4 }{12}(f'(\theta(t)) - \omega(t)^2)\right)
 ```
 
-We can now use $`f'(\theta) = -g/\ell\cos{\theta}`$ and $`\omega^2 = 2E/(\ell^2m) + 2g/\ell (1 - \cos(\theta))`$ (derived from the conservation of the energy) to write
+We can now use $`f'(\theta(t)) = -g/\ell\cos{\theta(t)}`$ and $`\omega^2 = 2E/(\ell^2m) + 2g/\ell (1 - \cos(\theta(t)))`$ (derived from the conservation of the energy) to write
 
 ```math
-\theta(t+dt) \approx 2\theta(t) -\theta(t - dt)  -\dfrac{g}{l}\sin(\theta) \left\{dt^2 + \dfrac{dt^4}{24}\left[-\dfrac{g}{l}\cos(\theta) - \dfrac{2E}{\ell^2m} - \dfrac{2g}{\ell}(1 - \cos(\theta))\right]\right\}
-
+\theta(t+dt) \approx 2\theta(t) -\theta(t - dt)  -\dfrac{g}{l}\sin(\theta(t)) \left\{dt^2 + \dfrac{dt^4}{12}\left[-\dfrac{g}{l}\cos(\theta(t)) - \dfrac{2E}{\ell^2m} - \dfrac{2g}{\ell}(1 - \cos(\theta(t)))\right]\right\}
 ```
 
 ```math
-\theta(t+dt) \approx 2\theta(t) -\theta(t - dt)  -\dfrac{g}{l}\sin(\theta) \left[dt^2 + \dfrac{dt^4 }{24\ell}\left(g\cos(\theta) - \dfrac{2E}{\ell m} - 2g\right)\right]
+\theta(t+dt) \approx 2\theta(t) -\theta(t - dt)  -\dfrac{g}{l}\sin(\theta(t)) \left[dt^2 + \dfrac{dt^4 }{12\ell}\left(g\cos(\theta(t)) - \dfrac{2E}{\ell m} - 2g\right)\right]
 ```
 
 # Resources:
-- [Equations](https://en.wikipedia.org/wiki/Pendulum_(mechanics))
+- [Pendulum - Wikipedia](https://en.wikipedia.org/wiki/Pendulum_(mechanics))
