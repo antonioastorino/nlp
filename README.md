@@ -5,33 +5,39 @@ Let
 - $`\omega`$ be the angular velocity
 - $`\alpha`$ be the angular acceleration
 
+The angle $`\theta`$ at time $`t + dt`$ can be expressed by
+```math
+\theta(t+dt) = \theta(t) + \omega(t)dt + \dfrac{1}{2}\alpha(t)dt^2
+```
+
 The angular acceleration due to gravity is given by
 ```math
 \alpha(t) = - \dfrac{g}{l}\sin(\theta(t))
 ```
-The time evolution of $`\theta`$ needs to be somehow calculated.
+
+A closed form for $`\omega(t)`$ is not available. Therefore, I need find another way.
 
 ## Method 1 - Taylor expansion - central difference
-I am unable to calculate $`\omega(t)`$, and hence I found an alternative solution.
 
 The discretized equation for the $`\theta(t)`$ can be derived as follows:
-- Compute two Taylor expansions for `theta(t +/- dt)` truncated at the 2nd order wherein
-- I add the two expansions and solve for `theta(t + dt)`
+- Compute the Taylor approximation of degree 2 for $`\theta(t + dt)`$ and $`\theta(t - dt)`$
+- Take the sum (or the average) of the two results
+- Solve for $`\theta(t + dt)`$
 
 ```
-theta(t + dt)                 - theta(t) =~ +omega(t) * dt + 1/2 alpha(t) * dt^2  +
-                theta(t - dt) - theta(t) =~ -omega(t) * dt + 1/2 alpha(t) * dt^2  =
+theta(t + dt)                   - theta(t) =~ +omega(t) * dt + 1/2 alpha(t) * dt^2  +
+                theta(t - dt)   - theta(t) =~ -omega(t) * dt + 1/2 alpha(t) * dt^2  =
 ------------------------------------------------------------------------------------
-theta(t + dt) + theta(t - dt)            =~                      alpha(t) * dt^2
+theta(t + dt) + theta(t - dt) - 2 theta(t) =~  0             +     alpha(t) * dt^2
 ```
 
 ```math
-\theta(t + dt) =~ \alpha(t) * dt^2 - \theta(t - dt)
+\theta(t + dt) =~ 2 \theta(t) - \theta(t - dt) + \alpha(t) * dt^2
 ```
 
 > NOTE 1: The result does not depend on $`\omega(t)`$
 
-> NOTE 2: Expanding to the 3rd would cause the extra term to disappear with the sum -> this approximation is very good!
+> NOTE 2: Expanding to the 3rd order would cause the extra terms to cancel out: -> the error is $`O(t^4)`$ 
 
 I don't trust this approach because I made it up. However, I verified that:
 - The angular frequency for small angles
@@ -154,7 +160,7 @@ Considering that $`f''(\theta(t)) = g/\ell\sin(\theta(t)) = -\alpha(t)`$, we can
 Using the Taylor series truncated at the 4th order and the central difference method, we obtain
 
 ```math
-\theta(t+dt) \approx 2\theta(t) -\theta(t - dt) +\alpha(t) dt^2 + \dfrac{dt^4}{12}\ddot{\alpha}(t)
+\theta(t+dt) \approx 2\theta(t) -\theta(t - dt) +\alpha(t) dt^2 + \dfrac{1}{12}\ddot{\alpha}(t)dt^4
 ```
 or
 
