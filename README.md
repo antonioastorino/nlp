@@ -9,30 +9,27 @@ The angular acceleration due to gravity is given by
 ```math
 \alpha(t) = - \dfrac{g}{l}\sin(\theta(t))
 ```
-
-An immediate discretization method would look as follows:
-- $`\theta(t + dt) = \omega(t) * dt`$
-- $`\omega(t + dt) = \alpha(t) * dt`$
-
+The time evolution of $`\theta`$ needs to be somehow calculated.
 
 ## Method 1 - Taylor expansion - central difference
-I am unable to calculate $`\omega`$, and hence I found an alternative solution.
+I am unable to calculate $`\omega(t)`$, and hence I found an alternative solution.
 
-The discretized equation for the $`theta(t)`$ can be derived as follows:
+The discretized equation for the $`\theta(t)`$ can be derived as follows:
 - Compute two Taylor expansions for `theta(t +/- dt)` truncated at the 2nd order wherein
 - I add the two expansions and solve for `theta(t + dt)`
 
 ```
-theta(t + dt) - theta(t) =~ +omega(t) * dt + 1/2 alpha(t) * dt^2  +
-theta(t - dt) - theta(t) =~ -omega(t) * dt + 1/2 alpha(t) * dt^2  =
---------------------------------------------------------------------
-theta(t + dt) + theta(t - dt) =~ alpha(t) * dt^2 =>
-┍━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┑
-| theta(t + dt) =~ alpha(t) * dt^2 - theta(t - dt) |
-┕━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┙
+theta(t + dt)                 - theta(t) =~ +omega(t) * dt + 1/2 alpha(t) * dt^2  +
+                theta(t - dt) - theta(t) =~ -omega(t) * dt + 1/2 alpha(t) * dt^2  =
+------------------------------------------------------------------------------------
+theta(t + dt) + theta(t - dt)            =~                      alpha(t) * dt^2
 ```
 
-> NOTE 1: The result does not involve $`\omega`$
+```math
+\theta(t + dt) =~ \alpha(t) * dt^2 - \theta(t - dt)
+```
+
+> NOTE 1: The result does not depend on $`\omega(t)`$
 
 > NOTE 2: Expanding to the 3rd would cause the extra term to disappear with the sum -> this approximation is very good!
 
@@ -141,23 +138,23 @@ However, this also means we can take a larger $`dt`$ and improve the speed of th
 #### The math
 Let $`f(\theta(t)) = \alpha(t)`$.
 ```math
-\dot{\alpha(t)} = f'(\theta(t))\omega(t)
+\dot{\alpha}(t) = f'(\theta(t))\omega(t)
 ```
 
 ```math
-\ddot{\alpha(t)} = f''(\theta(t))\omega(t)^2 + f'(\theta(t))\alpha(t)
+\ddot{\alpha}(t) = f''(\theta(t))\omega(t)^2 + f'(\theta(t))\alpha(t)
 ```
 The last equation shows that the 4th term in the Taylor series depends on $`\omega^2`$, which was already calculated in [Method 2](https://github.com/antonioastorino/nlp?tab=readme-ov-file#method-2---calculate-omega)
 
 Considering that $`f''(\theta(t)) = g/\ell\sin(\theta(t)) = -\alpha(t)`$, we can write:
 ```math
-\ddot{\alpha(t)} = \alpha(t)(f'(\theta(t)) - \omega(t)^2)
+\ddot{\alpha}(t) = \alpha(t)(f'(\theta(t)) - \omega(t)^2)
 ```
 
 Using the Taylor series truncated at the 4th order and the central difference method, we obtain
 
 ```math
-\theta(t+dt) \approx 2\theta(t) -\theta(t - dt) +\alpha(t) dt^2 + \dfrac{dt^4}{12}\ddot{\alpha(t)}
+\theta(t+dt) \approx 2\theta(t) -\theta(t - dt) +\alpha(t) dt^2 + \dfrac{dt^4}{12}\ddot{\alpha}(t)
 ```
 or
 
