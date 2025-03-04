@@ -7,12 +7,12 @@ Let
 
 The angle $`\theta`$ at time $`t + dt`$ can be expressed by
 ```math
-\theta(t+dt) = \theta(t) + \omega(t)dt + \dfrac{1}{2}\alpha(t)dt^2
+(0.1)\hspace{1cm}\theta(t+dt) = \theta(t) + \omega(t)dt + \dfrac{1}{2}\alpha(t)dt^2
 ```
 
 The angular acceleration due to gravity is given by
 ```math
-\alpha(t) = - \dfrac{g}{l}\sin(\theta(t))
+(0.2)\hspace{1cm}\alpha(t) = - \dfrac{g}{l}\sin(\theta(t))
 ```
 
 A closed form for $`\omega(t)`$ is not available. Therefore, I need find another way.
@@ -32,7 +32,7 @@ theta(t + dt) + theta(t - dt) - 2 theta(t) =~  0             +     alpha(t) * dt
 ```
 
 ```math
-\theta(t + dt) =~ 2 \theta(t) - \theta(t - dt) + \alpha(t) * dt^2
+(1.1)\hspace{1cm}\theta(t + dt) =~ 2 \theta(t) - \theta(t - dt) + \alpha(t) * dt^2
 ```
 
 > NOTE 1: The result does not depend on $`\omega(t)`$
@@ -96,26 +96,19 @@ Some extra noise has been added to the measured angle $`\theta`$.
 
 ## Method 2 - Calculate $`\omega(t)`$
 I eventually figured out that $`\omega(t)`$ can be immediately derived from the conservation of energy.
+```math
+(2.1)\hspace{1cm}E = \dfrac{mv(t)^2}{2}-mg\ell(1-\cos(\theta(t)))
 ```
-m * v^2
-------- - m * g * l * (1 - cos(theta)) = E  =>
-   2
-┍━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┑
-| omega^2 = (2 * E / l^2 / m - 2 * g / l * (1 - cos(theta))) |
-┕━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┙
+from which
 
+```math
+(2.2)\hspace{1cm}\omega(t)^2 = 2\dfrac{E}{\ell^2m} - 2\dfrac{g}{\ell}(1-\cos(\theta(t)))
 ```
 
 It's easy to verify that
 
-```
-d                                  2 * g
--- omega^2 = 2 * omega * alpha = - ----- sin(theta) * omega =>
-dt                                   l
-
-           g
-alpha = - --- sin(theta)
-           l
+```math
+(2.3)\hspace{1cm}\frac{\omega(t)^2}{dt}=2\omega(t)\alpha(t) \Rightarrow \alpha(t) = -\dfrac{g}{\ell}\sin(\theta(t)
 ```
 as expected. This shows that the formula for $`\omega(t)^2`$ is correct, but what is the sign $`\omega(t)`$?.
 
@@ -144,39 +137,40 @@ However, this also means we can take a larger $`dt`$ and improve the speed of th
 #### The math
 Let $`f(\theta(t)) = \alpha(t)`$.
 ```math
-\dot{\alpha}(t) = f'(\theta(t))\omega(t)
+(3.1)\hspace{1cm}\dot{\alpha}(t) = f'(\theta(t))\omega(t)
 ```
 
 ```math
-\ddot{\alpha}(t) = f''(\theta(t))\omega(t)^2 + f'(\theta(t))\alpha(t)
+(3.2)\hspace{1cm}\ddot{\alpha}(t) = f''(\theta(t))\omega(t)^2 + f'(\theta(t))\alpha(t)
 ```
 The last equation shows that the 4th term in the Taylor series depends on $`\omega^2`$, which was already calculated in [Method 2](https://github.com/antonioastorino/nlp?tab=readme-ov-file#method-2---calculate-omega)
 
 Considering that $`f''(\theta(t)) = g/\ell\sin(\theta(t)) = -\alpha(t)`$, we can write:
 ```math
-\ddot{\alpha}(t) = \alpha(t)(f'(\theta(t)) - \omega(t)^2)
+(3.3)\hspace{1cm}\ddot{\alpha}(t) = \alpha(t)(f'(\theta(t)) - \omega(t)^2)
 ```
 
 Using the Taylor series truncated at the 4th order and the central difference method, we obtain
 
 ```math
-\theta(t+dt) \approx 2\theta(t) -\theta(t - dt) +\alpha(t) dt^2 + \dfrac{1}{12}\ddot{\alpha}(t)dt^4
+(3.4)\hspace{1cm}\theta(t+dt) \approx 2\theta(t) -\theta(t - dt) +\alpha(t) dt^2 + \dfrac{1}{12}\ddot{\alpha}(t)dt^4
 ```
 or
 
 ```math
-\theta(t+dt) \approx 2\theta(t) -\theta(t - dt) + \alpha(t) \left(dt^2 + \dfrac{dt^4 }{12}(f'(\theta(t)) - \omega(t)^2)\right)
+(3.5)\hspace{1cm}\theta(t+dt) \approx 2\theta(t) -\theta(t - dt) + \alpha(t) \left(dt^2 + \dfrac{dt^4 }{12}(f'(\theta(t)) - \omega(t)^2)\right)
 ```
 
 We can now use $`f'(\theta(t)) = -g/\ell\cos{\theta(t)}`$ and $`\omega^2 = 2E/(\ell^2m) + 2g/\ell (1 - \cos(\theta(t)))`$ (derived from the conservation of the energy) to write
 
 ```math
-\theta(t+dt) \approx 2\theta(t) -\theta(t - dt)  -\dfrac{g}{l}\sin(\theta(t)) \left\{dt^2 + \dfrac{dt^4}{12}\left[-\dfrac{g}{l}\cos(\theta(t)) - \dfrac{2E}{\ell^2m} - \dfrac{2g}{\ell}(1 - \cos(\theta(t)))\right]\right\}
+(3.6)\hspace{1cm}\theta(t+dt) \approx 2\theta(t) -\theta(t - dt)  -\dfrac{g}{l}\sin(\theta(t)) \left\{dt^2 + \dfrac{dt^4}{12}\left[-\dfrac{g}{l}\cos(\theta(t)) - \dfrac{2E}{\ell^2m} - \dfrac{2g}{\ell}(1 - \cos(\theta(t)))\right]\right\}
 ```
 
 ```math
-\theta(t+dt) \approx 2\theta(t) -\theta(t - dt)  -\dfrac{g}{l}\sin(\theta(t)) \left[dt^2 + \dfrac{dt^4 }{12\ell}\left(g\cos(\theta(t)) - \dfrac{2E}{\ell m} - 2g\right)\right]
+(3.7)\hspace{1cm}\theta(t+dt) \approx 2\theta(t) -\theta(t - dt)  -\dfrac{g}{l}\sin(\theta(t)) \left[dt^2 + \dfrac{dt^4 }{12\ell}\left(g\cos(\theta(t)) - \dfrac{2E}{\ell m} - 2g\right)\right]
 ```
-
+#### The problem
+If $`E`$ is not a constant, $`\omega^2`$ cannot be calculated the way we did. I think we could use calculated it from the first-order approximation of $`\theta(t)`$.
 # Resources:
 - [Pendulum - Wikipedia](https://en.wikipedia.org/wiki/Pendulum_(mechanics))
