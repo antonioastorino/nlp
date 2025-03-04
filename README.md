@@ -53,7 +53,17 @@ With the default values, the output is
 
 
 ### Example 2 - damping force + input force 
-In this demo, external forces are applied and the result looks ok.
+In this demo, external forces are applied:
+```math
+(1.2)\hspace{1cm}\alpha(t) = -\dfrac{g}{\ell}\sin(\theta(t)) + \tau(t)\dfrac{1}{\ell^2m} - \dfrac{\theta(t) -\theta(t-dt)}{dt}\dfrac{k}{m}
+```
+where
+- $`tau(t)`$ is an external torque
+- $`k`$ is the damping coefficient
+
+The external torque is an arbitrary function. The damping force is assumed to be proportional to the speed, opposite to the direction of motion.
+
+Run:
 ```
 python3 example_02py
 ```
@@ -108,7 +118,7 @@ from which
 It's easy to verify that
 
 ```math
-(2.3)\hspace{1cm}\frac{\omega(t)^2}{dt}=2\omega(t)\alpha(t) \Rightarrow \alpha(t) = -\dfrac{g}{\ell}\sin(\theta(t)
+(2.3)\hspace{1cm}\frac{d\omega(t)^2}{dt}=2\omega(t)\alpha(t) \Rightarrow \alpha(t) = -\dfrac{g}{\ell}\sin(\theta(t)
 ```
 as expected. This shows that the formula for $`\omega(t)^2`$ is correct, but what is the sign $`\omega(t)`$?.
 
@@ -121,7 +131,7 @@ Problems:
 
 For now, the velocity sign is inverted when the kinetic energy is almost 0 and is less than the kinetic energy at the previous step.
 
-> **If you have a better idea, please share it.**
+> **NOTE: If you have a better idea, please share it.**
 
 For testing, run
 ```
@@ -170,7 +180,11 @@ We can now use $`f'(\theta(t)) = -g/\ell\cos{\theta(t)}`$ and $`\omega^2 = 2E/(\
 ```math
 (3.7)\hspace{1cm}\theta(t+dt) \approx 2\theta(t) -\theta(t - dt)  -\dfrac{g}{l}\sin(\theta(t)) \left[dt^2 + \dfrac{dt^4 }{12\ell}\left(g\cos(\theta(t)) - \dfrac{2E}{\ell m} - 2g\right)\right]
 ```
+#### Advantages
+The error caused by approximating $`\omega(t+dt)`$ to the 4th (or 5th) order should be sufficiently small even with lager $`dt`$.
+
 #### The problem
-If $`E`$ is not a constant, $`\omega^2`$ cannot be calculated the way we did. I think we could use calculated it from the first-order approximation of $`\theta(t)`$.
+If $`E`$ is not a constant, $`\omega^2`$ cannot be derived from $`(2.1)`$. This method is quite useless at this point.
+
 # Resources:
 - [Pendulum - Wikipedia](https://en.wikipedia.org/wiki/Pendulum_(mechanics))
