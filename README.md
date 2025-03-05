@@ -15,7 +15,7 @@ The angular acceleration due to gravity is given by
 (0.2)\hspace{1cm}\alpha(t) = - \dfrac{g}{l}\sin(\theta(t))
 ```
 
-A closed form for $`\omega(t)`$ is not available. Therefore, I need find another way.
+A closed form for $`\omega(t)`$ is not available. Therefore, I need to find another way.
 
 ## Method 1 - Taylor expansion - central difference
 
@@ -65,7 +65,7 @@ The external torque is an arbitrary function. The damping force is assumed to be
 
 Run:
 ```
-python3 example_02py
+python3 example_02.py
 ```
 
 ![./doc/input_damped-plus-sinusoidal-input.png](doc/input_damped-plus-sinusoidal-input.png)
@@ -76,13 +76,19 @@ python3 example_02py
 
 ### Example 3 - PID-controlled system
 A simple PID controller sets the pendulum to a desired position.
-An impulsive perturbation is applied after steady state is almost reached. Then the system goes back to steady state. The maximum torque is limited to avoid unphysical responses. 
+An impulsive perturbation is applied after steady state is almost reached. Then the system goes back to steady state. The maximum torque is limited to avoid unphysical responses.
+
+
+Run:
+```
+python3 example_03.py
+```
 
 ![./doc/example_03-controlling-torque.png](doc/example_03-controlling-torque.png)
 
 ### Example 4 - Current, not torque
 So far, I have assumed that we can control the applied torque directly.
-This is assumption is now removed by creating a actuator (a non-ideal current generator),
+This assumption is now removed by creating an actuator (a non-ideal current generator),
 taking into account the delay between setting a desired current and actually producing it,
 and ensuring that the current saturates according to a sigmoid function.
 ```
@@ -103,6 +109,12 @@ where
 The produced torque is assumed to be proportional to the applied current.
 
 Some extra noise has been added to the measured angle $`\theta`$.
+
+
+Run:
+```
+python3 example_04.py
+```
 
 ## Method 2 - Calculate $`\omega(t)`$
 I eventually figured out that $`\omega(t)`$ can be immediately derived from the conservation of energy.
