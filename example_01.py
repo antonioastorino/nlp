@@ -11,17 +11,8 @@ animation of the pendulum.
         * `animation = False`
         * `DURATION = 1000`
 
-The problem is setting the initial conditions. Basically, you can define them in terms of initial
-displacement (theta(t = -dt) and theta(t = 0)). This is causes problems if you change the
-time interval `dt`, as the same displacement would occur within a different time slot. So, don't
-change `dt` or try to also change the initial delta `theta` accordingly.
-
 > NOTE: python is slow at rendering and your frame rate is anyway the bottleneck. For this reason,
     the `dt` used for generating data is not the same used to update the animation
-> NOTE2: the simulation works also if the pendulum starts spinning around but wrapping `theta`
-        when it exceeds 2pi makes the calculation of the angular speed `omega` more complicated.
-        So, the energy-related plots will look weird. Test by using
-        * `INITIAL_DELTA_THETA = np.pi / 530`
 '''
 
 import numpy as np
@@ -29,7 +20,7 @@ import matplotlib.pyplot as plt
 
 ######################################## Parameters ###############################################
 animation = True
-INITIAL_DELTA_THETA = np.pi / 730
+INITIAL_THETA = np.pi * 3 / 4
 DURATION = 6  # s
 l = 2  # m
 m = 10  # kg
@@ -54,8 +45,8 @@ def theta_t_plus_dt(dt, theta_t, theta_t_minus_dt):
 
 
 t = np.linspace(0, NUM_OF_SAMPLES * dt, NUM_OF_SAMPLES - 1)
-theta_curr = INITIAL_DELTA_THETA
-theta_prev = 0
+theta_curr = INITIAL_THETA
+theta_prev = INITIAL_THETA
 theta_next = 0
 theta_vec = [0 for _ in range(0, NUM_OF_SAMPLES - 1)]
 omega_vec = [0 for _ in range(0, NUM_OF_SAMPLES - 1)]
